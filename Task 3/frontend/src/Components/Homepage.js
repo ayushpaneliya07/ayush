@@ -65,16 +65,16 @@ export const Homepage = () => {
     }
   };
 
-  const handleBreakInOut = () => {
-    setOnBreak(!isOnBreak);
-    if (!isOnBreak) {
-      setBreakTime("00:00:00");
-    } else {
-      const endTime = new Date().toLocaleTimeString();
-      const entry = { type: "break", startTime: "breakTime, endTime" };
-      setTimeEntery([...timeEntery, entry]);
-    }
-  };
+  // const handleBreakInOut = () => {
+  //   setOnBreak(!isOnBreak);
+  //   if (!isOnBreak) {
+  //     setBreakTime("00:00:00");
+  //   } else {
+  //     const endTime = new Date().toLocaleTimeString();
+  //     const entry = { type: "break", startTime: "breakTime, endTime" };
+  //     setTimeEntery([...timeEntery, entry]);
+  //   }
+  // };
 
   const formatTime = (hours, minutes, seconds) => {
     return pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
