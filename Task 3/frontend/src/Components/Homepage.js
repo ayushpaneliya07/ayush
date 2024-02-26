@@ -11,48 +11,150 @@ export const Homepage = () => {
   const [isClockIn, setIsClockIn] = useState(false);
   const [selectOption, setSelectOption] = useState("");
   const [timeEntery, setTimeEntery] = useState([]);
+  const [timeWhenBreakStated,setTimeWhenBreakStated ] = useState(null);
+  const [breakTimer, setBreakTimer] = useState(0);
+  const [curTimerID, setCurTimerID] = useState(null);
+  const [breakTimerID, setBreakTimerID] = useState(null);
+  const [timerID, setTimerID] = useState(null);
+  // let timer;
+
+  // useEffect(() => {
+  //   let timer;
+  //   if (isClockIn && !isOnBreak) {
+  //     let seconds = 0;
+  //     let minutes = 0;
+  //     let hours = 0;
+  //     timer = setInterval(() => {
+  //       seconds++;
+  //       if (seconds === 60) {
+  //         seconds = 0;
+  //         minutes++;
+  //         if (minutes === 60) {
+  //           minutes = 0;
+  //           hours++;
+  //         }
+  //       }
+  //       const formattedTime = formatTime(hours, minutes, seconds);
+  //       setCurTime(formattedTime);
+  //     }, 1000);
+  //   } else if (isOnBreak) {
+  //     clearInterval(timer);
+  //     let seconds = 0;
+  //     let minutes = 0;
+  //     let hours = 0;
+  //     timer = setInterval(() => {
+  //       seconds++;
+  //       if (seconds === 60) {
+  //         seconds = 0;
+  //         minutes++;
+  //         if (minutes === 60) {
+  //           minutes = 0;
+  //           hours++;
+  //         }
+  //       }
+  //       const formattedTime = formatTime(hours, minutes, seconds);
+  //       setCurTime(formattedTime);
+  //     }, 1000);
+  //   } else {
+  //     clearInterval(timer);
+  //   }
+  //   return () => clearInterval(timer);
+  // }, [isClockIn, isOnBreak]);
+
+  useEffect(()=>{
+    if(isClockIn && !isOnBreak){
+      setCurTimerID(
+        setInterval(() => {
+          setCurTime((prevTime) => incrementTime(prevTime));
+        }, 1000)
+      );
+    }else{
+      clearInterval(curTimerID);
+    }
+    return ()=>clearInterval(curTimerID);
+  }, [isClockIn,isOnBreak])
 
   useEffect(() => {
-    let timer;
-    if (isClockIn && !isOnBreak) {
-      let seconds = 0;
-      let minutes = 0;
-      let hours = 0;
-      timer = setInterval(() => {
-        seconds++;
-        if (seconds === 60) {
-          seconds = 0;
-          minutes++;
-          if (minutes === 60) {
-            minutes = 0;
-            hours++;
-          }
-        }
-        const formattedTime = formatTime(hours, minutes, seconds);
-        setCurTime(formattedTime);
-      }, 1000);
-    } else if (isOnBreak) {
-      let seconds = 0;
-      let minutes = 0;
-      let hours = 0;
-      timer = setInterval(() => {
-        seconds++;
-        if (seconds === 60) {
-          seconds = 0;
-          minutes++;
-          if (minutes === 60) {
-            minutes = 0;
-            hours++;
-          }
-        }
-        const formattedTime = formatTime(hours, minutes, seconds);
-        setCurTime(formattedTime);
-      }, 1000);
+    if (isOnBreak) {
+      clearInterval(timerID);
+      setTimerID(
+        setInterval(() => {
+          setBreakTimer((prevTime) => prevTime + 1);
+          setBreakTime(secondsToTime(breakTimer + 1));
+        }, 1000)
+      );
     } else {
-      clearInterval(timer);
+      clearInterval(timerID);
+      setTimerID(
+        setInterval(() => {
+          setCurTime((prevTime) => incrementTime(prevTime));
+        }, 1000)
+      );
     }
-    return () => clearInterval(timer);
-  }, [isClockIn, isOnBreak]);
+    return () => clearInterval(timerID);
+  }, [isOnBreak, breakTimer]);
+
+  const incrementTime = (time) => {
+    const [hours, minutes, seconds] = time.split(":").map(Number);
+    let newSeconds = seconds + 1;
+    let newMinutes = minutes;
+    let newHours = hours;
+    if (newSeconds === 60) {
+      newSeconds = 0;
+      newMinutes += 1;
+    }
+    if (newMinutes === 60) {
+      newMinutes = 0;
+      newHours += 1;
+    }
+    return `${String(newHours).padStart(2, "0")}:${String(
+      newMinutes
+    ).padStart(2, "0")}:${String(newSeconds).padStart(2, "0")}`;
+  };
+
+  const secondsToTime = (totalSeconds) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+      2,
+      "0"
+    )}:${String(seconds).padStart(2, "0")}`;
+  };
+
+//   const handleBreakInOut = () => {
+//     setOnBreak(!isOnBreak);
+//     let timer;
+//     if (!isOnBreak) {
+//         clearInterval(timer); // Pause the timer for current time
+//         setBreakTime("00:00:00");
+//         setTimeWhenBreakStated(curtime);
+//     } else {
+//         // End break, log the break time
+//         const endTime = new Date().toLocaleTimeString();
+//         const entry = { type: "break", startTime: timeWhenBreakStated, endTime };
+//         setTimeEntery([...timeEntery, entry]);
+//         setTimeWhenBreakStated(null);
+        
+//         // Resume the timer for current time
+//         let seconds = 0;
+//         let minutes = 0;
+//         let hours = 0;
+//         timer = setInterval(() => {
+//             seconds++;
+//             if (seconds === 60) {
+//                 seconds = 0;
+//                 minutes++;
+//                 if (minutes === 60) {
+//                     minutes = 0;
+//                     hours++;
+//                 }
+//             }
+//             const formattedTime = formatTime(hours, minutes, seconds);
+//             setCurTime(formattedTime);
+//         }, 1000);
+//     }
+// };
 
   const handleClockIn = () => {
     setIsClockIn(true);
@@ -65,24 +167,36 @@ export const Homepage = () => {
     }
   };
 
-  // const handleBreakInOut = () => {
-  //   setOnBreak(!isOnBreak);
-  //   if (!isOnBreak) {
-  //     setBreakTime("00:00:00");
-  //   } else {
-  //     const endTime = new Date().toLocaleTimeString();
-  //     const entry = { type: "break", startTime: "breakTime, endTime" };
-  //     setTimeEntery([...timeEntery, entry]);
-  //   }
+  const handleBreakInOut = () => {
+    setOnBreak(!isOnBreak);
+    if (!isOnBreak) {
+      clearInterval(timerID);
+      setBreakTime("00:00:00");
+      setBreakTimer(0);
+    } else {
+      clearInterval(timerID);
+      setCurTime("00:00:00");
+    }
+  };
+
+  const handleClockOut = ()=>{
+    setIsClockIn(false);
+    setOnBreak(false);
+
+    const endTime = new Date().toLocaleTimeString();
+    const entry = {type: 'clock-Out', startTime: curtime, endTime}
+    setTimeEntery([...timeEntery, entry]);
+
+    localStorage.setItem("timeEntries", JSON.stringify(timeEntery));
+  }
+
+  // const formatTime = (hours, minutes, seconds) => {
+  //   return pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
   // };
 
-  const formatTime = (hours, minutes, seconds) => {
-    return pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
-  };
-
-  const pad = (num) => {
-    return num < 10 ? "0" + num : num;
-  };
+  // const pad = (num) => {
+  //   return num < 10 ? "0" + num : num;
+  // };
 
   return (
     <div className="timer_container">
@@ -121,7 +235,7 @@ export const Homepage = () => {
         <Button
           className="clockin_button"
           variant="contained"
-          onClick={isClockIn ? "handleClockIn" : "handleClockOut"}
+          onClick={() => (isClockIn ? handleClockOut() : handleClockIn())}
         >
           {!isClockIn ? "Clock In" : "Clock Out"}
         </Button>
