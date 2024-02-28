@@ -5,7 +5,7 @@ import MenuItem from "@mui/material/MenuItem";
 import "./Homepage.css";
 
 export const Homepage = () => { 
-  const [curtime, setCurTime] = useState("00:00:00");
+  const [curTime, setcurTime] = useState("00:00:00");
   const [breakTime, setBreakTime] = useState("00:00:00");
   const [isOnBreak, setOnBreak] = useState(false);
   const [isClockIn, setIsClockIn] = useState(false);
@@ -13,32 +13,36 @@ export const Homepage = () => {
 
   useEffect(() => {
     // Load data from session storage when the component mounts
-    const storedData = sessionStorage.getItem('punchInOutData');
+    // console.log("Fetching data from localStorage...");
+    const storedData = localStorage.getItem('punchInOutData');
     if (storedData) {
+      console.log("Data found in localStorage:", storedData);
       const parsedData = JSON.parse(storedData);
       setIsClockIn(parsedData.isClockIn);
       setOnBreak(parsedData.isOnBreak);
-      setCurTime(parsedData.curtime);
+      setcurTime(parsedData.curTime);
       setBreakTime(parsedData.breakTime);
-    }
+    } 
+
   }, []);
 
   useEffect(() => {
     // Save data to sessionStorage whenever there's a change
+    // console.log("Saving data to localStorage...");
     const dataToSave = {
       isClockIn,
       isOnBreak,
-      curtime,
+      curTime,
       breakTime
     };
-    sessionStorage.setItem('punchInOutData', JSON.stringify(dataToSave));
-  }, [isClockIn, isOnBreak, curtime, breakTime]);
-
+    localStorage.setItem('punchInOutData', JSON.stringify(dataToSave));
+  }, [isClockIn, isOnBreak, curTime, breakTime]);
+   
   useEffect(() => {
     let curTimerID;
     if (isClockIn && !isOnBreak) {
       curTimerID = setInterval(() => {
-        setCurTime((prevTime) => incrementTime(prevTime));
+        setcurTime((prevTime) => incrementTime(prevTime));
       }, 1000);
     }
     return () => clearInterval(curTimerID);
@@ -74,9 +78,10 @@ export const Homepage = () => {
     return `${String(newHours).padStart(2, "0")}:${String(newMinutes).padStart(2, "0")}:${String(newSeconds).padStart(2, "0")}`;
   };
 
-  const handleClockIn = () => {
+  const handleClockIn = (e) => {
+    // e.preventDefault();
     setIsClockIn(true);
-    setCurTime("00:00:00");
+    setcurTime("00:00:00");
     setBreakTime("00:00:00");
 
     if (!selectOption) {
@@ -84,15 +89,42 @@ export const Homepage = () => {
       setIsClockIn(false);
       return;
     }
+    sendDataToServer({ isClockIn: true, isOnBreak: false, curTime: "00:00:00", breakTime: "00:00:00" });
   };
 
-  const handleBreakInOut = () => {
+  const handleBreakInOut = (e) => {
+    // e.preventDefault();
     setOnBreak(!isOnBreak);
   };
   
-  const handleClockOut = () => {
+  const handleClockOut = async (e) => {
+    // e.preventDefault();
     setIsClockIn(false);
     setOnBreak(false);
+    sendDataToServer({ isClockIn: false, isOnBreak, curTime, breakTime });
+  };
+
+  const sendDataToServer = (data) => {
+    fetch('http://localhost:3003/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(responseData => {
+      // Handle response from server if needed
+      console.log(responseData);
+    })
+    .catch(error => {
+      console.error('Error sending data to server:', error);
+    });
   };
 
   return (
@@ -100,7 +132,7 @@ export const Homepage = () => {
       <div className="time_name">
         <div className="current_set">
           <h4 className="current_time">current time</h4>
-          <h1 className="current_timer">{curtime}</h1>
+          <h1 className="current_timer">{curTime}</h1>
         </div>
         <div className="break_set">
           <h4 className="break_time">break time</h4>
