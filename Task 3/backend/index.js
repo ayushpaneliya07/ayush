@@ -29,20 +29,18 @@ async function createUserTable() {
   }
 }
 
-async function punchInPunchOutTable () {
-  
-    // const client = new Client({
-    //   /* your PostgreSQL connection configuration */
-    // });
-  
+async function clockIn () {
+
     try {
+      console.log('create a table')
       await client.connect();
   
       const query = `
-        CREATE TABLE IF NOT EXISTS punchInOut (
+        CREATE TABLE IF NOT EXISTS clockinOut (
           id SERIAL PRIMARY KEY,
-          cur_Time TIMESTAMP,
-          break_Time TIMESTAMP
+          datetime TIMESTAMP NOT NULL,
+          cur_time VARCHAR(8) NOT NULL,
+          break_time VARCHAR(8) NOT NULL
         )
       `;
       
@@ -58,6 +56,7 @@ async function punchInPunchOutTable () {
 
 app.use(cors());
 app.use(express.json());
+
 
 app.post("/signup",async (req, res) => {
   console.log("Request body:", req.body);
@@ -123,14 +122,17 @@ app.post("/login", async(req, res)=>{
 })
 
 app.post('/',async(req,res)=>{
+  // console.log(req.body, '1')
   try{
-    const {curTime, breakTime} = req.body ;
+    const {datetime, curTime, breakTime} = req.body ;
+    console.log(req.body)
     const result = await client.query(
       `
-        INSERT INTO punchInOut( cur_Time, break_Time)
-        VALUES ($1, $2)
-        `,
-      [curTime, breakTime]
+        INSERT INTO clockinOut (datetime, cur_time, break_time)
+        VALUES (TO_TIMESTAMP($1 || ' ' || $2, 'YYYY-MM-DD HH24:MI:SS'), $2, $3)
+        RETURNING id;
+      `,
+      [datetime, curTime, breakTime]
     );
     res
     .status(200)

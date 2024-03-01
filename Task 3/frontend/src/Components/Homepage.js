@@ -89,7 +89,7 @@ export const Homepage = () => {
       setIsClockIn(false);
       return;
     }
-    sendDataToServer({ isClockIn: true, isOnBreak: false, curTime: "00:00:00", breakTime: "00:00:00" });
+    // sendDataToServer({ isClockIn: true, isOnBreak: false, curTime: "00:00:00", breakTime: "00:00:00" });
   };
 
   const handleBreakInOut = (e) => {
@@ -101,7 +101,9 @@ export const Homepage = () => {
     // e.preventDefault();
     setIsClockIn(false);
     setOnBreak(false);
-    sendDataToServer({ isClockIn: false, isOnBreak, curTime, breakTime });
+    const currentDate = new Date().toISOString().slice(0, 10);
+    
+    sendDataToServer({ isClockIn: false, isOnBreak, currentDate, curTime, breakTime});
   };
 
   const sendDataToServer = (data) => {
