@@ -12,31 +12,20 @@ export const Homepage = () => {
   const [selectOption, setSelectOption] = useState("");
 
   useEffect(() => {
-    // Load data from session storage when the component mounts
-    // console.log("Fetching data from localStorage...");
-    const storedData = localStorage.getItem('punchInOutData');
+    const storedData = JSON.parse(localStorage.getItem('punchInOutData'));
     if (storedData) {
-      console.log("Data found in localStorage:", storedData);
-      const parsedData = JSON.parse(storedData);
-      setIsClockIn(parsedData.isClockIn);
-      setOnBreak(parsedData.isOnBreak);
-      setcurTime(parsedData.curTime);
-      setBreakTime(parsedData.breakTime);
-    } 
-
+      setcurTime(storedData.curTime);
+      setBreakTime(storedData.breakTime);
+      setOnBreak(storedData.isOnBreak);
+      setIsClockIn(storedData.isClockIn);
+      setSelectOption(storedData.selectOption);
+    }
   }, []);
 
   useEffect(() => {
-    // Save data to sessionStorage whenever there's a change
-    // console.log("Saving data to localStorage...");
-    const dataToSave = {
-      isClockIn,
-      isOnBreak,
-      curTime,
-      breakTime
-    };
+    const dataToSave = { isClockIn, isOnBreak, curTime, breakTime, selectOption };
     localStorage.setItem('punchInOutData', JSON.stringify(dataToSave));
-  }, [isClockIn, isOnBreak, curTime, breakTime]);
+  }, [isClockIn, isOnBreak, curTime, breakTime, selectOption]);
    
   useEffect(() => {
     let curTimerID;
@@ -79,7 +68,6 @@ export const Homepage = () => {
   };
 
   const handleClockIn = (e) => {
-    // e.preventDefault();
     setIsClockIn(true);
     setcurTime("00:00:00");
     setBreakTime("00:00:00");
@@ -89,16 +77,13 @@ export const Homepage = () => {
       setIsClockIn(false);
       return;
     }
-    // sendDataToServer({ isClockIn: true, isOnBreak: false, curTime: "00:00:00", breakTime: "00:00:00" });
   };
 
   const handleBreakInOut = (e) => {
-    // e.preventDefault();
     setOnBreak(!isOnBreak);
   };
   
   const handleClockOut = async (e) => {
-    // e.preventDefault();
     setIsClockIn(false);
     setOnBreak(false);
     const currentDate = new Date().toISOString().slice(0, 10);
@@ -121,7 +106,6 @@ export const Homepage = () => {
       return response.json();
     })
     .then(responseData => {
-      // Handle response from server if needed
       console.log(responseData);
     })
     .catch(error => {
